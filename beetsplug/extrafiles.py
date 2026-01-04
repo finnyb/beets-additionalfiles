@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""beets-extrafiles plugin for beets."""
+"""bjj-beets-extrafiles plugin for beets."""
 import glob
 import itertools
 import os

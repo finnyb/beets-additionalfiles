@@ -1,1 +1,1 @@
-"""Tests for the beets-extrafiles plugin."""
+"""Tests for the bjj-beets-extrafiles plugin."""

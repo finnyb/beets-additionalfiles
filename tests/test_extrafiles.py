@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for the beets-extrafiles plugin."""
+"""Tests for the bjj-beets-extrafiles plugin."""
 import logging
 import os
 import shutil
@@ -21,7 +21,7 @@ class BaseTestCase(unittest.TestCase):
     """Base testcase class that sets up example files."""
 
     PLUGIN_CONFIG = {
-        'extrafiles': {
+        'bjjextrafiles': {
             'patterns': {
                 'log': ['*.log'],
                 'cue': ['*.cue', '*/*.cue'],
@@ -303,7 +303,7 @@ class MultiAlbumTestCase(unittest.TestCase):
     """Testcase class that checks if multiple albums are grouped correctly."""
 
     PLUGIN_CONFIG = {
-        'extrafiles': {
+        'bjjextrafiles': {
             'patterns': {
                 'log': ['*.log'],
             },
@@ -338,7 +338,7 @@ class MultiAlbumTestCase(unittest.TestCase):
         with unittest.mock.patch(
                 'beetsplug.extrafiles.beets.plugins.beets.config', config,
         ):
-            self.plugin = beetsplug.extrafiles.ExtraFilesPlugin('extrafiles')
+            self.plugin = beetsplug.extrafiles.ExtraFilesPlugin('bjjextrafiles')
 
     def tearDown(self):
         """Remove the example files."""
