@@ -1,8 +1,8 @@
-# Copilot Instructions for beets-extrafiles
+# Copilot Instructions for bjj-beets-extrafiles
 
 ## Project Overview
 
-This is a **beets plugin** called `beets-extrafiles` that copies additional files and directories during the beets import process. The plugin is written in Python 3 and extends the beets music library management system.
+This is a **beets plugin** called `bjj-beets-extrafiles` that copies additional files and directories during the beets import process. The plugin is written in Python 3 and extends the beets music library management system.
 
 **Key Facts:**
 - Plugin namespace: `beetsplug`
