@@ -1,4 +1,4 @@
-# bjj-beets-extrafiles
+# beets-additionalfiles
 
 A plugin for [beets](http://beets.io/) that copies additional files and directories during the import process.
 
@@ -11,14 +11,14 @@ A plugin for [beets](http://beets.io/) that copies additional files and director
 
 This plugin has no dependencies apart from [`setuptools`](https://pypi.org/project/setuptools/) and [`beets`](https://pypi.org/project/beets/) itself.
 
-The plugin in release on [PyPI](https://pypi.org/project/bjj-beets-extrafiles/) and can be installed via:
+The plugin in release on [PyPI](https://pypi.org/project/beets-additionalfiles/) and can be installed via:
 
-    $ pip3 install --user bjj-beets-extrafiles
+    $ pip3 install --user beets-additionalfiles
 
 It is also possible to clone the git repository and install the plugin manually:
 
-    $ git clone https://github.com/finnyb/beets-extrafiles.git
-    $ cd beets-extrafiles
+    $ git clone https://github.com/finnyb/beets-additionalfiles.git
+    $ cd beets-additionalfiles
     $ ./setup.py install --user
 
 
@@ -29,7 +29,7 @@ Activate the plugin by adding it to the `plugins` list in beet's `config.yaml`:
 ```yaml
 plugins:
   # [...]
-  - bjjextrafiles
+  - additionalfiles
 ```
 
 Also, you need to add [glob patterns](https://docs.python.org/3/library/glob.html#module-glob) that will be matched.
@@ -39,7 +39,7 @@ This means that if an album has files in `albumdir/CD1` and `albumdir/CD2`, then
 The snippet below will add a pattern group named `all` that matches all files that have an extension.
 
 ```yaml
-bjjextrafiles:
+additionalfiles:
     patterns:
         all: '*.*'
 ```
@@ -48,7 +48,7 @@ Pattern names are useful when you want to customize the destination path that th
 The following configuration will match all folders named `scans`, `Scans`, `artwork` or `Artwork` (using the pattern group `artworkdir`), copy them to the album path and rename them to `artwork`:
 
 ```yaml
-extrafiles:
+additionalfiles:
     patterns:
         artworkdir:
           - '[sS]cans/'
@@ -62,8 +62,8 @@ extrafiles:
 
 After cloning the git repository, you can use `setup.py` to set up the necessary symlinks for you:
 
-    $ git clone https://github.com/finnyb/beets-extrafiles.git
-    $ cd beets-extrafiles
+    $ git clone https://github.com/finnyb/beets-additionalfiles.git
+    $ cd beets-additionalfiles
     $ ./setup.py develop --user
 
 When adding changes, please conform to [PEP 8](https://www.python.org/dev/peps/pep-0008/).
@@ -94,7 +94,7 @@ The last commit has been made over a year ago and also suffers from a [bug](http
 I wrote a patch and filed a [Pull Request](https://github.com/sbarakat/beets-copyartifacts/pull/43) some time ago, but I has not been merged yet.
 
 Also, wanted to go in a different direction by supporting folders and the ability to do finer-grained path customizations.
-Hence, I wrote `beets-extrafiles`.
+Hence, I wrote `beets-additionalfiles`.
 
 ### Why does this plugin not support Python 2 and Windows?
 

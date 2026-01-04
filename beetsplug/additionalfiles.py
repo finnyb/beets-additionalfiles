@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""bjj-beets-extrafiles plugin for beets."""
+"""beets-additionalfiles plugin for beets."""
 import glob
 import itertools
 import os
@@ -34,7 +34,7 @@ def commonpath(paths):
         return prefix
 
 
-class FormattedExtraFileMapping(beets.dbcore.db.FormattedMapping):
+class FormattedAdditionalFileMapping(beets.dbcore.db.FormattedMapping):
     """Formatted Mapping that allows path separators for certain keys."""
 
     def __getitem__(self, key):
@@ -45,11 +45,11 @@ class FormattedExtraFileMapping(beets.dbcore.db.FormattedMapping):
                 value = value.decode('utf-8', 'ignore')
             return value
         else:
-            return super(FormattedExtraFileMapping, self).__getitem__(key)
+            return super(FormattedAdditionalFileMapping, self).__getitem__(key)
 
 
-class ExtraFileModel(beets.dbcore.db.Model):
-    """Model for a  FormattedExtraFileMapping instance."""
+class AdditionalFileModel(beets.dbcore.db.Model):
+    """Model for a  FormattedAdditionalFileMapping instance."""
 
     _fields = {
         'artist':      beets.dbcore.types.STRING,
@@ -65,12 +65,12 @@ class ExtraFileModel(beets.dbcore.db.Model):
         return {}
 
 
-class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
+class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
     """Plugin main class."""
 
     def __init__(self, *args, **kwargs):
         """Initialize a new plugin instance."""
-        super(ExtraFilesPlugin, self).__init__(*args, **kwargs)
+        super(AdditionalFilesPlugin, self).__init__(*args, **kwargs)
         self.config.add({
             'patterns': {},
             'paths': {},
@@ -103,7 +103,7 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
 
     def _copy_file(self, path, dest):
         """Copy path to dest."""
-        self._log.info('Copying extra file: {0} -> {1}', path, dest)
+        self._log.info('Copying additional file: {0} -> {1}', path, dest)
         if os.path.isdir(path):
             if os.path.exists(dest):
                 raise beets.util.FilesystemError(
@@ -125,7 +125,7 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
 
     def _move_file(self, path, dest):
         """Move path to dest."""
-        self._log.info('Moving extra file: {0} -> {1}', path, dest)
+        self._log.info('Moving additional file: {0} -> {1}', path, dest)
         sourcepath = beets.util.displayable_path(path)
         destpath = beets.util.displayable_path(dest)
         shutil.move(sourcepath, destpath)
@@ -223,8 +223,8 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
         old_basename, fileext = os.path.splitext(os.path.basename(strpath))
         old_filename, _ = os.path.splitext(pathsep.join(strpath.split(os.sep)))
 
-        mapping = FormattedExtraFileMapping(
-            ExtraFileModel(
+        mapping = FormattedAdditionalFileMapping(
+            AdditionalFileModel(
                 basename=old_basename,
                 filename=old_filename,
                 **meta
@@ -240,8 +240,7 @@ class ExtraFilesPlugin(beets.plugins.BeetsPlugin):
                 '$albumpath/$filename',
             )
 
-        # Get template funcs and evaluate against mapping
-        funcs = beets.library.DefaultTemplateFunctions().functions()
+        funcs = beets.library.models.DefaultTemplateFunctions().functions()
         filepath = path_format.substitute(mapping, funcs) + fileext
 
         # Sanitize filename

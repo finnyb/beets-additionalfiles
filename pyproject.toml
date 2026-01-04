@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "bjj-beets-extrafiles"
+name = "beets-additionalfiles"
 version = "0.0.1"
 description = "A plugin for beets that copies additional files and directories during the import process."
 readme = "README.md"
@@ -15,7 +15,7 @@ authors = [
 requires-python = ">=3.10,<4"
 dependencies = [
     "beets>=2.5.1",
-    "mediafile>=0.6.0,<0.7.0",
+    "mediafile>=0.12.0",
     "setuptools",
 ]
 classifiers = [
@@ -31,9 +31,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/finnyb/beets-extrafiles"
-Repository = "https://github.com/finnyb/beets-extrafiles"
-Issues = "https://github.com/finnyb/beets-extrafiles/issues"
+Homepage = "https://github.com/finnyb/beets-additionalfiles"
+Repository = "https://github.com/finnyb/beets-additionalfiles"
+Issues = "https://github.com/finnyb/beets-additionalfiles/issues"
 
 [project.optional-dependencies]
 test = [
@@ -94,4 +94,9 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
 

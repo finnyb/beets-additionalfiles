@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for the bjj-beets-extrafiles plugin."""
+"""Tests for the beets-additionalfiles plugin."""
 import logging
 import os
 import shutil
@@ -11,7 +11,7 @@ import beets.library
 import beets.util
 import confuse
 
-import beetsplug.extrafiles
+import beetsplug.additionalfiles
 
 RSRC = os.path.join(os.path.dirname(__file__), 'rsrc')
 
@@ -24,7 +24,7 @@ class BaseTestCase(unittest.TestCase):
     """Base testcase class that sets up example files."""
 
     PLUGIN_CONFIG = {
-        'bjjextrafiles': {
+        'additionalfiles': {
             'patterns': {
                 'log': ['*.log'],
                 'cue': ['*.cue', '*/*.cue'],
@@ -88,9 +88,9 @@ class BaseTestCase(unittest.TestCase):
         ])
 
         with unittest.mock.patch(
-                'beetsplug.extrafiles.beets.plugins.beets.config', config,
+                'beetsplug.additionalfiles.beets.plugins.beets.config', config,
         ):
-            self.plugin = beetsplug.extrafiles.ExtraFilesPlugin('bjjextrafiles')
+            self.plugin = beetsplug.additionalfiles.AdditionalFilesPlugin('additionalfiles')
 
     def tearDown(self):
         """Remove the example files."""
@@ -306,7 +306,7 @@ class MultiAlbumTestCase(unittest.TestCase):
     """Testcase class that checks if multiple albums are grouped correctly."""
 
     PLUGIN_CONFIG = {
-        'bjjextrafiles': {
+        'additionalfiles': {
             'patterns': {
                 'log': ['*.log'],
             },
@@ -339,9 +339,9 @@ class MultiAlbumTestCase(unittest.TestCase):
         ])
 
         with unittest.mock.patch(
-                'beetsplug.extrafiles.beets.plugins.beets.config', config,
+                'beetsplug.additionalfiles.beets.plugins.beets.config', config,
         ):
-            self.plugin = beetsplug.extrafiles.ExtraFilesPlugin('bjjextrafiles')
+            self.plugin = beetsplug.additionalfiles.AdditionalFilesPlugin('additionalfiles')
 
     def tearDown(self):
         """Remove the example files."""

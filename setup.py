@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Setup for bjj-beets-extrafiles."""
+"""Setup for beets-additionalfiles."""
 import os
 
 from setuptools import setup
@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
     readme = f.read()
 
 setup(
-    name='bjj-beets-extrafiles',
+    name='beets-additionalfiles',
     version='0.0.1',
     description=(
         'A plugin for beets that copies additional files and directories '
@@ -19,10 +19,9 @@ setup(
     long_description_content_type='text/markdown',
     author='Bill Findeisen',
     author_email='billf5293@gmail.com',
-    url='https://github.com/finnyb/beets-extrafiles',
+    url='https://github.com/finnyb/beets-additionalfiles',
     license='MIT',
     packages=['beetsplug'],
-    namespace_packages=['beetsplug'],
     test_suite='tests',
     install_requires=[
         'beets>=2.5.0',
