@@ -109,11 +109,9 @@ class MatchPatternsTestCase(BaseTestCase):
             for path, category in self.plugin.match_patterns(source=sourcedir)
         )
 
-        expected_files = set([
-            (os.path.join(sourcedir, 'scans/'), 'artwork'),
-            (os.path.join(sourcedir, 'file.cue'), 'cue'),
-            (os.path.join(sourcedir, 'file.log'), 'log'),
-        ])
+        expected_files = {(os.path.join(sourcedir, 'scans/'), 'artwork'),
+                          (os.path.join(sourcedir, 'file.cue'), 'cue'),
+                          (os.path.join(sourcedir, 'file.log'), 'log')}
 
         assert files == expected_files
 
