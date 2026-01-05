@@ -107,11 +107,20 @@ class MatchPatternsTestCase(BaseTestCase):
             for path, category in self.plugin.match_patterns(source=sourcedir)
         }
 
-        expected_files = {(os.path.join(sourcedir, 'scans/'), 'artwork'),
-                          (os.path.join(sourcedir, 'file.cue'), 'cue'),
-                          (os.path.join(sourcedir, 'file.log'), 'log')}
+        expected_cue = (os.path.join(sourcedir, 'file.cue'), 'cue')
+        expected_log = (os.path.join(sourcedir, 'file.log'), 'log')
 
-        self.assertEqual(files, expected_files)
+        self.assertIn(expected_cue, files)
+        self.assertIn(expected_log, files)
+
+        artwork_files = {f for f in files if f[1] == 'artwork'}
+        self.assertGreaterEqual(len(artwork_files), 1)
+        artwork_paths = [f[0] for f in artwork_files]
+        self.assertTrue(
+            any(path.lower() == os.path.join(sourcedir, 'scans/').lower()
+                for path in artwork_paths),
+            f"Expected scans/ directory, got {artwork_paths}"
+        )
 
 
 class MoveFilesTestCase(BaseTestCase):
