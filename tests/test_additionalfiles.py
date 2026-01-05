@@ -38,7 +38,8 @@ class BaseTestCase(unittest.TestCase):
     }
 
     def _create_example_file(self, *path):
-        open(os.path.join(*path), mode='w').close()
+        with open(os.path.join(*path), mode='w'):
+            pass
 
     def _create_artwork_files(self, *path):
         artwork_path = os.path.join(*path)
@@ -47,11 +48,10 @@ class BaseTestCase(unittest.TestCase):
             self._create_example_file(artwork_path, filename)
 
     def setUp(self):
-        """Set up example files and instanciate the plugin."""
+        """Set up example files and instantiate the plugin."""
         self.srcdir = tempfile.TemporaryDirectory(suffix='src')
         self.dstdir = tempfile.TemporaryDirectory(suffix='dst')
 
-        # Create example files for single directory album
         os.makedirs(os.path.join(self.dstdir.name, 'single'))
         sourcedir = os.path.join(self.srcdir.name, 'single')
         os.makedirs(sourcedir)
@@ -63,7 +63,6 @@ class BaseTestCase(unittest.TestCase):
             self._create_example_file(sourcedir, filename)
         self._create_artwork_files(sourcedir, 'scans')
 
-        # Create example files for multi-directory album
         os.makedirs(os.path.join(self.dstdir.name, 'multiple'))
         sourcedir = os.path.join(self.srcdir.name, 'multiple')
         os.makedirs(os.path.join(sourcedir, 'CD1'))
@@ -82,7 +81,6 @@ class BaseTestCase(unittest.TestCase):
             self._create_example_file(sourcedir, discdir, 'file.cue')
         self._create_artwork_files(sourcedir, 'scans')
 
-        # Set up plugin instance
         config = confuse.RootView(sources=[
             confuse.ConfigSource.of(self.PLUGIN_CONFIG),
         ])
@@ -101,30 +99,29 @@ class BaseTestCase(unittest.TestCase):
 class MatchPatternsTestCase(BaseTestCase):
     """Testcase that checks if all extra files are matched."""
 
-    def testMatchPattern(self):
+    def test_match_pattern(self):
         """Test if extra files are matched in the media file's directory."""
         sourcedir = os.path.join(self.srcdir.name, 'single')
-        files = set(
+        files = {
             (beets.util.displayable_path(path), category)
             for path, category in self.plugin.match_patterns(source=sourcedir)
-        )
+        }
 
         expected_files = {(os.path.join(sourcedir, 'scans/'), 'artwork'),
                           (os.path.join(sourcedir, 'file.cue'), 'cue'),
                           (os.path.join(sourcedir, 'file.log'), 'log')}
 
-        assert files == expected_files
+        self.assertEqual(files, expected_files)
 
 
 class MoveFilesTestCase(BaseTestCase):
     """Testcase that moves files."""
 
-    def testMoveFilesSingle(self):
+    def test_move_files_single(self):
         """Test if extra files are moved for single directory imports."""
         sourcedir = os.path.join(self.srcdir.name, 'single')
         destdir = os.path.join(self.dstdir.name, 'single')
 
-        # Move file
         source = os.path.join(sourcedir, 'file.mp3')
         destination = os.path.join(destdir, 'moved_file.mp3')
         item = beets.library.Item.from_path(source)
@@ -136,32 +133,29 @@ class MoveFilesTestCase(BaseTestCase):
 
         self.plugin.on_cli_exit(None)
 
-        # Check source directory
-        assert os.path.exists(os.path.join(sourcedir, 'file.txt'))
-        assert not os.path.exists(os.path.join(sourcedir, 'file.cue'))
-        assert not os.path.exists(os.path.join(sourcedir, 'file.log'))
-        assert not os.path.exists(os.path.join(sourcedir, 'audio.log'))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.txt')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'file.log')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'audio.log')))
 
-        assert not os.path.exists(os.path.join(sourcedir, 'artwork'))
-        assert not os.path.exists(os.path.join(sourcedir, 'scans'))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'artwork')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'scans')))
 
-        # Check destination directory
-        assert not os.path.exists(os.path.join(destdir, 'file.txt'))
-        assert os.path.exists(os.path.join(destdir, 'file.cue'))
-        assert not os.path.exists(os.path.join(destdir, 'file.log'))
-        assert os.path.exists(os.path.join(destdir, 'audio.log'))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.txt')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.log')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'audio.log')))
 
-        assert not os.path.isdir(os.path.join(destdir, 'scans'))
-        assert os.path.isdir(os.path.join(destdir, 'artwork'))
-        assert (set(os.listdir(os.path.join(destdir, 'artwork'))) ==
-                set(('front.jpg', 'back.jpg')))
+        self.assertFalse(os.path.isdir(os.path.join(destdir, 'scans')))
+        self.assertTrue(os.path.isdir(os.path.join(destdir, 'artwork')))
+        self.assertEqual(set(os.listdir(os.path.join(destdir, 'artwork'))),
+                         {'front.jpg', 'back.jpg'})
 
-    def testMoveFilesMultiple(self):
+    def test_move_files_multiple(self):
         """Test if extra files are moved for multi-directory imports."""
         sourcedir = os.path.join(self.srcdir.name, 'multiple')
         destdir = os.path.join(self.dstdir.name, 'multiple')
 
-        # Move first file
         source = os.path.join(sourcedir, 'CD1', 'file.mp3')
         destination = os.path.join(destdir, '01 - moved_file.mp3')
         item = beets.library.Item.from_path(source)
@@ -171,7 +165,6 @@ class MoveFilesTestCase(BaseTestCase):
             beets.util.bytestring_path(destination),
         )
 
-        # Move second file
         source = os.path.join(sourcedir, 'CD2', 'file.mp3')
         destination = os.path.join(destdir, '02 - moved_file.mp3')
         item = beets.library.Item.from_path(source)
@@ -183,38 +176,35 @@ class MoveFilesTestCase(BaseTestCase):
 
         self.plugin.on_cli_exit(None)
 
-        # Check source directory
-        assert os.path.exists(os.path.join(sourcedir, 'file.txt'))
-        assert not os.path.exists(os.path.join(sourcedir, 'CD1', 'file.cue'))
-        assert not os.path.exists(os.path.join(sourcedir, 'CD2', 'file.cue'))
-        assert not os.path.exists(os.path.join(sourcedir, 'file.log'))
-        assert not os.path.exists(os.path.join(sourcedir, 'audio.log'))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.txt')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'CD1', 'file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'CD2', 'file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'file.log')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'audio.log')))
 
-        assert not os.path.exists(os.path.join(sourcedir, 'artwork'))
-        assert not os.path.exists(os.path.join(sourcedir, 'scans'))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'artwork')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'scans')))
 
-        # Check destination directory
-        assert not os.path.exists(os.path.join(destdir, 'file.txt'))
-        assert not os.path.exists(os.path.join(sourcedir, 'CD1_file.cue'))
-        assert not os.path.exists(os.path.join(sourcedir, 'CD2_file.cue'))
-        assert not os.path.exists(os.path.join(destdir, 'file.log'))
-        assert os.path.exists(os.path.join(destdir, 'audio.log'))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.txt')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'CD1_file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'CD2_file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.log')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'audio.log')))
 
-        assert not os.path.isdir(os.path.join(destdir, 'scans'))
-        assert os.path.isdir(os.path.join(destdir, 'artwork'))
-        assert (set(os.listdir(os.path.join(destdir, 'artwork'))) ==
-                set(('front.jpg', 'back.jpg')))
+        self.assertFalse(os.path.isdir(os.path.join(destdir, 'scans')))
+        self.assertTrue(os.path.isdir(os.path.join(destdir, 'artwork')))
+        self.assertEqual(set(os.listdir(os.path.join(destdir, 'artwork'))),
+                         {'front.jpg', 'back.jpg'})
 
 
 class CopyFilesTestCase(BaseTestCase):
     """Testcase that copies files."""
 
-    def testCopyFilesSingle(self):
+    def test_copy_files_single(self):
         """Test if extra files are copied for single directory imports."""
         sourcedir = os.path.join(self.srcdir.name, 'single')
         destdir = os.path.join(self.dstdir.name, 'single')
 
-        # Copy file
         source = os.path.join(sourcedir, 'file.mp3')
         destination = os.path.join(destdir, 'copied_file.mp3')
         item = beets.library.Item.from_path(source)
@@ -226,34 +216,31 @@ class CopyFilesTestCase(BaseTestCase):
 
         self.plugin.on_cli_exit(None)
 
-        # Check source directory
-        assert os.path.exists(os.path.join(sourcedir, 'file.txt'))
-        assert os.path.exists(os.path.join(sourcedir, 'file.cue'))
-        assert os.path.exists(os.path.join(sourcedir, 'file.log'))
-        assert not os.path.exists(os.path.join(sourcedir, 'audio.log'))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.txt')))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.cue')))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.log')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'audio.log')))
 
-        assert not os.path.exists(os.path.join(sourcedir, 'artwork'))
-        assert os.path.isdir(os.path.join(sourcedir, 'scans'))
-        assert (set(os.listdir(os.path.join(sourcedir, 'scans'))) ==
-                set(('front.jpg', 'back.jpg')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'artwork')))
+        self.assertTrue(os.path.isdir(os.path.join(sourcedir, 'scans')))
+        self.assertEqual(set(os.listdir(os.path.join(sourcedir, 'scans'))),
+                         {'front.jpg', 'back.jpg'})
 
-        # Check destination directory
-        assert not os.path.exists(os.path.join(destdir, 'file.txt'))
-        assert os.path.exists(os.path.join(destdir, 'file.cue'))
-        assert not os.path.exists(os.path.join(destdir, 'file.log'))
-        assert os.path.exists(os.path.join(destdir, 'audio.log'))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.txt')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.log')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'audio.log')))
 
-        assert not os.path.exists(os.path.join(destdir, 'scans'))
-        assert os.path.isdir(os.path.join(destdir, 'artwork'))
-        assert (set(os.listdir(os.path.join(destdir, 'artwork'))) ==
-                set(('front.jpg', 'back.jpg')))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'scans')))
+        self.assertTrue(os.path.isdir(os.path.join(destdir, 'artwork')))
+        self.assertEqual(set(os.listdir(os.path.join(destdir, 'artwork'))),
+                         {'front.jpg', 'back.jpg'})
 
-    def testCopyFilesMultiple(self):
+    def test_copy_files_multiple(self):
         """Test if extra files are copied for multi-directory imports."""
         sourcedir = os.path.join(self.srcdir.name, 'multiple')
         destdir = os.path.join(self.dstdir.name, 'multiple')
 
-        # Copy first file
         source = os.path.join(sourcedir, 'CD1', 'file.mp3')
         destination = os.path.join(destdir, '01 - copied_file.mp3')
         item = beets.library.Item.from_path(source)
@@ -263,7 +250,6 @@ class CopyFilesTestCase(BaseTestCase):
             beets.util.bytestring_path(destination),
         )
 
-        # Copy second file
         source = os.path.join(sourcedir, 'CD2', 'file.mp3')
         destination = os.path.join(destdir, '02 - copied_file.mp3')
         item = beets.library.Item.from_path(source)
@@ -275,29 +261,27 @@ class CopyFilesTestCase(BaseTestCase):
 
         self.plugin.on_cli_exit(None)
 
-        # Check source directory
-        assert os.path.exists(os.path.join(sourcedir, 'file.txt'))
-        assert os.path.exists(os.path.join(sourcedir, 'CD1', 'file.cue'))
-        assert os.path.exists(os.path.join(sourcedir, 'CD2', 'file.cue'))
-        assert os.path.exists(os.path.join(sourcedir, 'file.log'))
-        assert not os.path.exists(os.path.join(sourcedir, 'audio.log'))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.txt')))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'CD1', 'file.cue')))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'CD2', 'file.cue')))
+        self.assertTrue(os.path.exists(os.path.join(sourcedir, 'file.log')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'audio.log')))
 
-        assert not os.path.exists(os.path.join(sourcedir, 'artwork'))
-        assert os.path.isdir(os.path.join(sourcedir, 'scans'))
-        assert (set(os.listdir(os.path.join(sourcedir, 'scans'))) ==
-                set(('front.jpg', 'back.jpg')))
+        self.assertFalse(os.path.exists(os.path.join(sourcedir, 'artwork')))
+        self.assertTrue(os.path.isdir(os.path.join(sourcedir, 'scans')))
+        self.assertEqual(set(os.listdir(os.path.join(sourcedir, 'scans'))),
+                         {'front.jpg', 'back.jpg'})
 
-        # Check destination directory
-        assert not os.path.exists(os.path.join(destdir, 'file.txt'))
-        assert os.path.exists(os.path.join(destdir, 'CD1_file.cue'))
-        assert os.path.exists(os.path.join(destdir, 'CD2_file.cue'))
-        assert not os.path.exists(os.path.join(destdir, 'file.log'))
-        assert os.path.exists(os.path.join(destdir, 'audio.log'))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.txt')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'CD1_file.cue')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'CD2_file.cue')))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'file.log')))
+        self.assertTrue(os.path.exists(os.path.join(destdir, 'audio.log')))
 
-        assert not os.path.exists(os.path.join(destdir, 'scans'))
-        assert os.path.isdir(os.path.join(destdir, 'artwork'))
-        assert (set(os.listdir(os.path.join(destdir, 'artwork'))) ==
-                set(('front.jpg', 'back.jpg')))
+        self.assertFalse(os.path.exists(os.path.join(destdir, 'scans')))
+        self.assertTrue(os.path.isdir(os.path.join(destdir, 'artwork')))
+        self.assertEqual(set(os.listdir(os.path.join(destdir, 'artwork'))),
+                         {'front.jpg', 'back.jpg'})
 
 
 class MultiAlbumTestCase(unittest.TestCase):
@@ -312,7 +296,7 @@ class MultiAlbumTestCase(unittest.TestCase):
     }
 
     def setUp(self):
-        """Set up example files and instanciate the plugin."""
+        """Set up example files and instantiate the plugin."""
         self.srcdir = tempfile.TemporaryDirectory(suffix='src')
         self.dstdir = tempfile.TemporaryDirectory(suffix='dst')
 
@@ -328,10 +312,10 @@ class MultiAlbumTestCase(unittest.TestCase):
                 os.path.join(RSRC, 'full.mp3'),
                 os.path.join(sourcedir, 'track02.mp3'),
             )
-            logfile = os.path.join(sourcedir, '{}.log'.format(album))
-            open(logfile, mode='w').close()
+            logfile = os.path.join(sourcedir, f'{album}.log')
+            with open(logfile, mode='w'):
+                pass
 
-        # Set up plugin instance
         config = confuse.RootView(sources=[
             confuse.ConfigSource.of(self.PLUGIN_CONFIG),
         ])
@@ -346,16 +330,16 @@ class MultiAlbumTestCase(unittest.TestCase):
         self.srcdir.cleanup()
         self.dstdir.cleanup()
 
-    def testAlbumGrouping(self):
-        """Test if albums are."""
+    def test_album_grouping(self):
+        """Test if albums are grouped correctly."""
         for album in ('album1', 'album2'):
             sourcedir = os.path.join(self.srcdir.name, album)
             destdir = os.path.join(self.dstdir.name, album)
 
             for i in range(1, 3):
-                source = os.path.join(sourcedir, 'track{0:02d}.mp3'.format(i))
+                source = os.path.join(sourcedir, f'track{i:02d}.mp3')
                 destination = os.path.join(
-                    destdir, '{0:02d} - {1} - untitled.mp3'.format(i, album),
+                    destdir, f'{i:02d} - {album} - untitled.mp3',
                 )
                 item = beets.library.Item.from_path(source)
                 item.album = album
@@ -373,9 +357,9 @@ class MultiAlbumTestCase(unittest.TestCase):
             destdir = os.path.join(self.dstdir.name, album)
             for i in range(1, 3):
                 destination = os.path.join(
-                    destdir, '{0:02d} - {1} - untitled.mp3'.format(i, album),
+                    destdir, f'{i:02d} - {album} - untitled.mp3',
                 )
-                assert os.path.exists(destination)
-            assert os.path.exists(os.path.join(
-                self.dstdir.name, album, '{}.log'.format(album),
-            ))
+                self.assertTrue(os.path.exists(destination))
+            self.assertTrue(os.path.exists(os.path.join(
+                self.dstdir.name, album, f'{album}.log',
+            )))
