@@ -1,16 +1,26 @@
-# Copilot Instructions for beets-extrafiles
+# Copilot Instructions for beets-additionalfiles
 
 ## Project Overview
 
-This is a **beets plugin** called `beets-extrafiles` that copies additional files and directories during the beets import process. The plugin is written in Python 3 and extends the beets music library management system.
+This is a **beets plugin** called `beets-additionalfiles` that copies additional files and directories during the beets import process. The plugin is written in modern Python 3.10+ and extends the beets music library management system.
 
 **Key Facts:**
 - Plugin namespace: `beetsplug`
-- Main module: `beetsplug/extrafiles.py`
-- Targets: Python 3.5+, Unix-like OS only (no Windows or Python 2 support)
-- Dependencies: `beets>=1.4.7`, `mediafile~=0.6.0`
+- Main module: `beetsplug/additionalfiles.py`
+- Targets: Python 3.10+, Unix-like OS only (no Windows support)
+- Dependencies: `beets>=2.5.1`, `mediafile>=0.12.0`, `setuptools`
+- Dev Dependencies: `pytest>=7.0.0`, `pytest-cov>=4.0.0`, `ruff>=0.1.0`, `mypy>=1.0.0`
 
 ## Code Style & Conventions
+
+### Modern Python Standards (3.10+)
+- Use `from __future__ import annotations` for all modules
+- Add comprehensive type hints to all functions and methods
+- Use modern union syntax: `str | None` instead of `Optional[str]`
+- Use built-in collection types: `dict[str, Any]`, `list[str]`, `set[int]`
+- Use f-strings for string formatting
+- Use `super()` without arguments
+- Annotate class variables with `ClassVar` when appropriate
 
 ### Beets Plugin Patterns
 - Extend `beets.plugins.BeetsPlugin` for plugin classes
@@ -19,23 +29,31 @@ This is a **beets plugin** called `beets-extrafiles` that copies additional file
 - Use `beets.util` for utility functions
 - Always handle both bytes and unicode strings properly (use `.decode('utf-8', 'ignore')` when needed)
 
+### Code Quality
+- Run `ruff check beetsplug/ tests/` before committing
+- Use `ruff format beetsplug/ tests/` to format code
+- Follow single-quote style for strings
+- Line length: 100 characters max
+- Use the Makefile for convenience: `make check`, `make lint`, `make format`
+
 ## Testing
 
 - **Framework**: Use Python's built-in `unittest` or `pytest`
 - **Location**: Place tests in `tests/` directory
-- **Test Files**: Name test files with `test_` prefix (e.g., `test_extrafiles.py`)
+- **Test Files**: Name test files with `test_` prefix (e.g., `test_additionalfiles.py`)
 - **Test Resources**: Store test resources in `tests/rsrc/`
 - **Coverage**: Aim for comprehensive test coverage of plugin functionality
 
 ### Running Tests
 ```bash
-# Run all tests
+# Using Makefile (recommended)
+make test                 # Run all tests
+make test-coverage        # Run tests with coverage report
+make test-fast           # Run tests in quiet mode
+
+# Using pytest directly
 python -m pytest tests/
-
-# Run specific test file
 python -m pytest tests/test_additionalfiles.py
-
-# Run with coverage
 python -m pytest --cov=beetsplug tests/
 ```
 
@@ -82,7 +100,9 @@ uv sync
 ## Compatibility Considerations
 
 ### Python Version Support
-- Minimum Python version: 3.5
+- Minimum Python version: 3.10+
+- Uses modern Python features: PEP 604 union syntax, PEP 585 built-in types
+- Type hints use `from __future__ import annotations`
 
 ### OS Compatibility
 - **Supported**: Unix-like systems (Linux, macOS)
@@ -153,14 +173,17 @@ for item in album.items():
 
 When suggesting or reviewing code changes:
 - [ ] Follows PEP 8 style guidelines
-- [ ] Has appropriate docstrings
+- [ ] Uses modern Python 3.10+ syntax (type unions, built-in collection types)
+- [ ] Has comprehensive type hints with `from __future__ import annotations`
+- [ ] Has appropriate docstrings (Google style)
 - [ ] Handles both bytes and str types correctly
-- [ ] Compatible with Python 3.5+
+- [ ] Compatible with Python 3.10+
 - [ ] Includes tests for new functionality
 - [ ] Updates documentation if needed
 - [ ] No hardcoded paths or platform-specific code
 - [ ] Proper error handling and logging
 - [ ] Follows existing code patterns in the project
+- [ ] Passes `make check` (lint, format, and tests)
 
 ## Security & Best Practices
 
