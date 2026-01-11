@@ -4,23 +4,31 @@ A plugin for [beets](http://beets.io/) that copies additional files and director
 
 **Note:** This is a fork of [https://github.com/Holzhaus/beets-extrafiles](https://github.com/Holzhaus/beets-extrafiles).
 
-
 ## Installation
 
-**Important:** Even though beets supports Python 2 and Windows, this plugin does not - it only supports Python 3 on a Unix-like OS. See the [F.A.Q. section](#faq) for details.
+### Install from PyPI
 
-This plugin has no dependencies apart from [`setuptools`](https://pypi.org/project/setuptools/) and [`beets`](https://pypi.org/project/beets/) itself.
-
-The plugin in release on [PyPI](https://pypi.org/project/beets-additionalfiles/) and can be installed via:
+The plugin is released on [PyPI](https://pypi.org/project/beets-additionalfiles/) and can be installed via:
 
     $ pip3 install --user beets-additionalfiles
 
-It is also possible to clone the git repository and install the plugin manually:
+### Install manually with uv (recommended for development)
+
+Clone the repository and install using [uv](https://github.com/astral-sh/uv):
 
     $ git clone https://github.com/finnyb/beets-additionalfiles.git
     $ cd beets-additionalfiles
-    $ ./setup.py install --user
+    $ uv venv
+    $ source .venv/bin/activate  # On Unix/macOS
+    $ uv pip install -e .
 
+### Install manually with pip
+
+Alternatively, you can install with pip:
+
+    $ git clone https://github.com/finnyb/beets-additionalfiles.git
+    $ cd beets-additionalfiles
+    $ pip3 install --user -e .
 
 ## Usage
 
@@ -60,52 +68,22 @@ additionalfiles:
 
 ## Development
 
-After cloning the git repository, you can use `setup.py` to set up the necessary symlinks for you:
+After cloning the git repository, set up a development environment using `uv`:
 
     $ git clone https://github.com/finnyb/beets-additionalfiles.git
     $ cd beets-additionalfiles
-    $ ./setup.py develop --user
+    $ uv venv
+    $ source .venv/bin/activate  # On Unix/macOS
+    $ uv pip install -e ".[dev]"
+
+This will install the plugin in editable mode along with all development dependencies (pytest, ruff, mypy, etc.).
 
 When adding changes, please conform to [PEP 8](https://www.python.org/dev/peps/pep-0008/).
 Also, please add docstrings to all modules, functions and methods that you create.
-Use can check this by running [`flake8`](http://flake8.pycqa.org/en/latest/index.html) with the [`flake8-docstrings` plugin](https://pypi.org/project/flake8-docstrings/).
 
-Using [pre-commit](https://pre-commit.com/) will perform these checks automatically when committing changes.
-You can install the pre-commit hooks by executing this in the git repository's root directory:
+You should *test every single commit* by running the test suite:
 
-    $ pre-commit install
-
-You should also *test every single commit* by running unittests, i.e.:
-
-    $ ./setup.py test
+    $ pytest tests/
 
 If a test fails, please fix it *before* you create a pull request.
-If you accidently commit something that still contains errors, please amend, squash or fixup that commit instead of adding a new one.
-
-
-## F.A.Q.
-
-### Why not use the `copyartifacts` plugin?
-
-The [`copyartifacts` plugin](https://github.com/sbarakat/beets-copyartifacts) by Samit Barakat serves the same purpose.
-
-However, it curently seems to be unmaintained:
-The last commit has been made over a year ago and also suffers from a [bug](https://github.com/sbarakat/beets-copyartifacts/issues/38) that makes it crash on every run.
-I wrote a patch and filed a [Pull Request](https://github.com/sbarakat/beets-copyartifacts/pull/43) some time ago, but I has not been merged yet.
-
-Also, wanted to go in a different direction by supporting folders and the ability to do finer-grained path customizations.
-Hence, I wrote `beets-additionalfiles`.
-
-### Why does this plugin not support Python 2 and Windows?
-
-I initally wrote this plugin, because I needed it.
-Since I use neither Python 2 nor Windows, I didn't implement support.
-
-If you really need support, feel free to write a patch and file a Pull Request.
-As long as it does not make the code considerably harder to read, I'll merge it.
-
-For Windows support, some kind of Continuous Integration (CI) solution would also be necessary to prevent future breakage.
-
-### What license is used for this project?
-
-This project is released under the terms of the [MIT license](LICENSE).
+If you accidentally commit something that still contains errors, please amend, squash or fixup that commit instead of adding a new one.
