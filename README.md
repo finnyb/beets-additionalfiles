@@ -81,6 +81,16 @@ This will install the plugin in editable mode along with all development depende
 When adding changes, please conform to [PEP 8](https://www.python.org/dev/peps/pep-0008/).
 Also, please add docstrings to all modules, functions and methods that you create.
 
+### Code Quality
+
+This project uses [Ruff](https://github.com/astral-sh/ruff) for linting and code formatting:
+
+    $ ruff check beetsplug/ tests/          # Check for linting issues
+    $ ruff check --fix beetsplug/ tests/    # Auto-fix issues
+    $ ruff format beetsplug/ tests/         # Format code
+
+### Testing
+
 You should *test every single commit* by running the test suite:
 
     $ pytest tests/

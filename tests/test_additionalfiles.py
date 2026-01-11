@@ -1,9 +1,12 @@
-# -*- coding: utf-8 -*-
 """Tests for the beets-additionalfiles plugin."""
+
+from __future__ import annotations
+
 import logging
 import os
 import shutil
 import tempfile
+import unittest
 import unittest.mock
 
 import beets
@@ -37,17 +40,19 @@ class BaseTestCase(unittest.TestCase):
         },
     }
 
-    def _create_example_file(self, *path):
-        with open(os.path.join(*path), mode='w'):
+    def _create_example_file(self, *path: str) -> None:
+        """Create an empty file at the given path."""
+        with open(os.path.join(*path), mode='w', encoding='utf-8'):
             pass
 
-    def _create_artwork_files(self, *path):
+    def _create_artwork_files(self, *path: str) -> None:
+        """Create artwork directory with sample files."""
         artwork_path = os.path.join(*path)
         os.mkdir(artwork_path)
         for filename in ('front.jpg', 'back.jpg'):
             self._create_example_file(artwork_path, filename)
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up example files and instantiate the plugin."""
         self.srcdir = tempfile.TemporaryDirectory(suffix='src')
         self.dstdir = tempfile.TemporaryDirectory(suffix='dst')
@@ -86,11 +91,12 @@ class BaseTestCase(unittest.TestCase):
         ])
 
         with unittest.mock.patch(
-                'beetsplug.additionalfiles.beets.plugins.beets.config', config,
+            'beetsplug.additionalfiles.beets.plugins.beets.config',
+            config,
         ):
             self.plugin = beetsplug.additionalfiles.AdditionalFilesPlugin('additionalfiles')
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Remove the example files."""
         self.srcdir.cleanup()
         self.dstdir.cleanup()
@@ -304,7 +310,7 @@ class MultiAlbumTestCase(unittest.TestCase):
         },
     }
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up example files and instantiate the plugin."""
         self.srcdir = tempfile.TemporaryDirectory(suffix='src')
         self.dstdir = tempfile.TemporaryDirectory(suffix='dst')
@@ -322,7 +328,7 @@ class MultiAlbumTestCase(unittest.TestCase):
                 os.path.join(sourcedir, 'track02.mp3'),
             )
             logfile = os.path.join(sourcedir, f'{album}.log')
-            with open(logfile, mode='w'):
+            with open(logfile, mode='w', encoding='utf-8'):
                 pass
 
         config = confuse.RootView(sources=[
@@ -330,11 +336,12 @@ class MultiAlbumTestCase(unittest.TestCase):
         ])
 
         with unittest.mock.patch(
-                'beetsplug.additionalfiles.beets.plugins.beets.config', config,
+            'beetsplug.additionalfiles.beets.plugins.beets.config',
+            config,
         ):
             self.plugin = beetsplug.additionalfiles.AdditionalFilesPlugin('additionalfiles')
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Remove the example files."""
         self.srcdir.cleanup()
         self.dstdir.cleanup()

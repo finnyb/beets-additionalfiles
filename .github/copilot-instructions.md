@@ -12,22 +12,6 @@ This is a **beets plugin** called `beets-extrafiles` that copies additional file
 
 ## Code Style & Conventions
 
-### Python Standards
-- **Encoding**: Always use `# -*- coding: utf-8 -*-` at the top of Python files
-- **Style**: Follow PEP 8 guidelines
-- **Docstrings**: Use docstring format: `"""Brief description."""` for modules and functions
-- **Imports**: Group imports in this order:
-  1. Standard library imports
-  2. Third-party imports (beets, mediafile, etc.)
-  3. Local imports
-- **Line Length**: Keep lines reasonable (aim for 79-100 characters)
-
-### Naming Conventions
-- **Classes**: PascalCase (e.g., `ExtraFileModel`, `FormattedExtraFileMapping`)
-- **Functions/Methods**: snake_case (e.g., `commonpath`, `get_item`)
-- **Constants**: UPPER_SNAKE_CASE
-- **Private methods**: Prefix with underscore (e.g., `_private_method`)
-
 ### Beets Plugin Patterns
 - Extend `beets.plugins.BeetsPlugin` for plugin classes
 - Use `beets.dbcore.db.Model` for database models
@@ -99,14 +83,6 @@ uv sync
 
 ### Python Version Support
 - Minimum Python version: 3.5
-- When using newer Python features, always check version compatibility
-- Use version checks for features not available in older Python:
-  ```python
-  if sys.version_info >= (3, 5):
-      # Use new feature
-  else:
-      # Fallback implementation
-  ```
 
 ### OS Compatibility
 - **Supported**: Unix-like systems (Linux, macOS)

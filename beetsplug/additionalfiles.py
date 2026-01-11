@@ -1,113 +1,132 @@
-# -*- coding: utf-8 -*-
 """beets-additionalfiles plugin for beets."""
+
+from __future__ import annotations
+
 import glob
 import itertools
 import os
 import shutil
-import sys
 import traceback
+from collections.abc import Generator, Iterable
+from typing import Any, ClassVar
 
-import mediafile
 import beets.dbcore.db
 import beets.library
 import beets.plugins
 import beets.ui
 import beets.util.functemplate
-
-
-def commonpath(paths):
-    """Find longest common sub-path of each path in the sequence paths."""
-    # Typecast to list needed for Python version < 3.6
-    paths = list(paths)
-    if sys.version_info >= (3, 5):
-        return os.path.commonpath(paths)
-    else:
-        # os.path.commonpath does not exist in Python < 3.5
-        prefix = os.path.commonprefix(paths)
-
-        sep = os.sep.encode() if isinstance(prefix, bytes) else os.sep
-        prefix_split = prefix.split(sep)
-        path_split = paths[0].split(sep)
-        if path_split[:len(prefix_split)] != prefix_split:
-            prefix = os.path.dirname(prefix)
-
-        return prefix
+import mediafile
 
 
 class FormattedAdditionalFileMapping(beets.dbcore.db.FormattedMapping):
     """Formatted Mapping that allows path separators for certain keys."""
 
-    def __getitem__(self, key):
-        """Get the formatted version of model[key] as string."""
+    def __getitem__(self, key: str) -> str:
+        """Get the formatted version of model[key] as a string.
+
+        Args:
+            key: The key to retrieve from the model
+
+        Returns:
+            The formatted value as a string
+        """
         if key == 'albumpath':
             value = self.model._type(key).format(self.model.get(key))
             if isinstance(value, bytes):
                 value = value.decode('utf-8', 'ignore')
             return value
-        else:
-            return super(FormattedAdditionalFileMapping, self).__getitem__(key)
+        return super().__getitem__(key)
 
 
 class AdditionalFileModel(beets.dbcore.db.Model):
-    """Model for a  FormattedAdditionalFileMapping instance."""
+    """Model for a FormattedAdditionalFileMapping instance."""
 
-    _fields = {
-        'artist':      beets.dbcore.types.STRING,
+    _fields: ClassVar[dict[str, Any]] = {
+        'artist': beets.dbcore.types.STRING,
         'albumartist': beets.dbcore.types.STRING,
-        'album':       beets.dbcore.types.STRING,
-        'albumpath':   beets.dbcore.types.STRING,
-        'filename':    beets.dbcore.types.STRING,
+        'album': beets.dbcore.types.STRING,
+        'albumpath': beets.dbcore.types.STRING,
+        'filename': beets.dbcore.types.STRING,
     }
 
     @classmethod
-    def _getters(cls):
-        """Return a mapping from field names to getter functions."""
+    def _getters(cls) -> dict[str, Any]:
+        """Return a mapping from field names to getter functions.
+
+        Returns:
+            Empty dict as no custom getters are needed
+        """
         return {}
 
 
 class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
     """Plugin main class."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize a new plugin instance."""
-        super(AdditionalFilesPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.config.add({
             'patterns': {},
             'paths': {},
         })
 
-        self._moved_items = set()
-        self._copied_items = set()
-        self._scanned_paths = set()
+        self._moved_items: set[tuple[Any, Any, Any]] = set()
+        self._copied_items: set[tuple[Any, Any, Any]] = set()
+        self._scanned_paths: set[str] = set()
         self.path_formats = beets.ui.get_path_formats(self.config['paths'])
 
         self.register_listener('item_moved', self.on_item_moved)
         self.register_listener('item_copied', self.on_item_copied)
         self.register_listener('cli_exit', self.on_cli_exit)
 
-    def on_item_moved(self, item, source, destination):
-        """Run this listener function on item_moved events."""
+    def on_item_moved(self, item: Any, source: Any, destination: Any) -> None:
+        """Run this listener function on item_moved events.
+
+        Args:
+            item: The beets item that was moved
+            source: Source path of the item
+            destination: Destination path of the item
+        """
         self._moved_items.add((item, source, destination))
 
-    def on_item_copied(self, item, source, destination):
-        """Run this listener function on item_copied events."""
+    def on_item_copied(self, item: Any, source: Any, destination: Any) -> None:
+        """Run this listener function on item_copied events.
+
+        Args:
+            item: The beets item that was copied
+            source: Source path of the item
+            destination: Destination path of the item
+        """
         self._copied_items.add((item, source, destination))
 
-    def on_cli_exit(self, lib):
-        """Run this listener function when the CLI exits."""
+    def on_cli_exit(self, lib: Any) -> None:
+        """Run this listener function when the CLI exits.
+
+        Args:
+            lib: The beets library instance
+        """
         files = self.gather_files(self._copied_items)
         self.process_items(files, action=self._copy_file)
 
         files = self.gather_files(self._moved_items)
         self.process_items(files, action=self._move_file)
 
-    def _copy_file(self, path, dest):
-        """Copy path to dest."""
-        self._log.info('Copying additional file: {0} -> {1}', path, dest)
+    def _copy_file(self, path: Any, dest: Any) -> None:
+        """Copy path to dest.
+
+        Args:
+            path: Source path to copy from
+            dest: Destination path to copy to
+
+        Raises:
+            beets.util.FilesystemError: If the copy operation fails
+        """
+        self._log.info(f'Copying additional file: {path} -> {dest}')
         if os.path.isdir(path):
             if os.path.exists(dest):
                 raise beets.util.FilesystemError(
-                    'file exists', 'copy',
+                    'file exists',
+                    'copy',
                     (path, dest),
                 )
 
@@ -117,30 +136,45 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
                 shutil.copytree(sourcepath, destpath)
             except (OSError, IOError) as exc:
                 raise beets.util.FilesystemError(
-                    exc, 'copy', (path, dest),
+                    exc,
+                    'copy',
+                    (path, dest),
                     traceback.format_exc(),
-                )
+                ) from exc
         else:
             beets.util.copy(path, dest)
 
-    def _move_file(self, path, dest):
-        """Move path to dest."""
-        self._log.info('Moving additional file: {0} -> {1}', path, dest)
+    def _move_file(self, path: Any, dest: Any) -> None:
+        """Move path to dest.
+
+        Args:
+            path: Source path to move from
+            dest: Destination path to move to
+        """
+        self._log.info(f'Moving additional file: {path} -> {dest}')
         sourcepath = beets.util.displayable_path(path)
         destpath = beets.util.displayable_path(dest)
         shutil.move(sourcepath, destpath)
 
-    def process_items(self, files, action):
-        """Move path to dest."""
+    def process_items(
+        self,
+        files: Iterable[tuple[Any, Any]],
+        action: Any,
+    ) -> None:
+        """Process files with the given action.
+
+        Args:
+            files: Iterable of (source, destination) tuples
+            action: Callable to process each file (either _copy_file or _move_file)
+        """
         for source, destination in files:
             if not os.path.exists(source):
-                self._log.warning('Skipping missing source file: {0}', source)
+                self._log.warning(f'Skipping missing source file: {source}')
                 continue
 
             if os.path.exists(destination):
                 self._log.warning(
-                    'Skipping already present destination file: {0}',
-                    destination,
+                    f'Skipping already present destination file: {destination}',
                 )
                 continue
 
@@ -153,12 +187,22 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
                 action(sourcepath, destpath)
             except beets.util.FilesystemError:
                 self._log.warning(
-                    'Failed to process file: {} -> {}', source, destpath,
+                    f'Failed to process file: {source} -> {destpath}',
                 )
 
-    def gather_files(self, itemops):
-        """Generate a sequence of (path, destpath) tuples."""
-        def group(itemop):
+    def gather_files(
+        self,
+        itemops: Iterable[tuple[Any, Any, Any]],
+    ) -> Generator[tuple[Any, Any], None, None]:
+        """Generate a sequence of (path, destpath) tuples.
+
+        Args:
+            itemops: Iterable of (item, source, destination) tuples
+
+        Yields:
+            Tuples of (source_path, destination_path) for additional files
+        """
+        def group(itemop: tuple[Any, Any, Any]) -> tuple[str, str]:
             item = itemop[0]
             return (item.albumartist or item.artist, item.album)
 
@@ -167,33 +211,48 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
             items, sources, destinations = zip(*itemopgroup)
             item = items[0]
 
-            sourcedirs = set(os.path.dirname(f) for f in sources)
-            destdirs = set(os.path.dirname(f) for f in destinations)
+            sourcedirs = {os.path.dirname(f) for f in sources}
+            destdirs = {os.path.dirname(f) for f in destinations}
 
-            source = commonpath(sourcedirs)
-            destination = commonpath(destdirs)
+            source = os.path.commonpath(sourcedirs)
+            destination = os.path.commonpath(destdirs)
             self._log.debug(
-                '{0} -> {1} ({2.album} by {2.albumartist}, {3} tracks)',
-                source, destination, item, len(items),
+                f'{source} -> {destination} ({item.album} by {item.albumartist}, {len(items)} tracks)',
             )
 
             meta = {
-                'artist': item.artist or u'None',
-                'albumartist': item.albumartist or u'None',
-                'album': item.album or u'None',
+                'artist': item.artist or 'None',
+                'albumartist': item.albumartist or 'None',
+                'album': item.album or 'None',
                 'albumpath': beets.util.displayable_path(destination),
             }
 
             for path, category in self.match_patterns(
-                    source, skip=self._scanned_paths,
+                source,
+                skip=self._scanned_paths,
             ):
                 path = beets.util.bytestring_path(path)
                 relpath = os.path.normpath(os.path.relpath(path, start=source))
                 destpath = self.get_destination(relpath, category, meta.copy())
                 yield path, destpath
 
-    def match_patterns(self, source, skip=set()):
-        """Find all files matched by the patterns."""
+    def match_patterns(
+        self,
+        source: Any,
+        skip: set[str] | None = None,
+    ) -> Generator[tuple[str, str], None, None]:
+        """Find all files matched by the patterns.
+
+        Args:
+            source: Source directory to search for matching files
+            skip: Set of paths that have already been scanned (optional)
+
+        Yields:
+            Tuples of (path, category) for matched files
+        """
+        if skip is None:
+            skip = set()
+
         source_path = beets.util.displayable_path(source)
 
         if source_path in skip:
@@ -203,21 +262,35 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
             for pattern in patterns:
                 globpath = os.path.join(glob.escape(source_path), pattern)
                 for path in glob.iglob(globpath):
-                    # Skip special dot directories (just in case)
+                    # Skip special dot directories
                     if os.path.basename(path) in ('.', '..'):
                         continue
 
                     # Skip files handled by the beets media importer
                     ext = os.path.splitext(path)[1]
-                    if len(ext) > 1 and ext[1:] in mediafile.TYPES.keys():
+                    if len(ext) > 1 and ext[1:] in mediafile.TYPES:
                         continue
 
                     yield (path, category)
 
         skip.add(source_path)
 
-    def get_destination(self, path, category, meta):
-        """Get the destination path for a source file's relative path."""
+    def get_destination(
+        self,
+        path: Any,
+        category: str,
+        meta: dict[str, str],
+    ) -> str:
+        """Get the destination path for a source file's relative path.
+
+        Args:
+            path: Relative path of the source file
+            category: Category name for the file type
+            meta: Metadata dictionary with album information
+
+        Returns:
+            Destination path for the file
+        """
         pathsep = beets.config['path_sep_replace'].get(str)
         strpath = beets.util.displayable_path(path)
         old_basename, fileext = os.path.splitext(os.path.basename(strpath))
@@ -227,8 +300,9 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
             AdditionalFileModel(
                 basename=old_basename,
                 filename=old_filename,
-                **meta
-            ), for_path=True,
+                **meta,
+            ),
+            for_path=True,
         )
 
         for query, path_format in self.path_formats:
