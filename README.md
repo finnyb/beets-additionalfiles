@@ -10,9 +10,13 @@ A plugin for [beets](http://beets.io/) that copies additional files and director
 
 The plugin is released on [PyPI](https://pypi.org/project/beets-additionalfiles/) and can be installed via:
 
+    $ uv pip install beets-additionalfiles
+
+Or with pip:
+
     $ pip3 install --user beets-additionalfiles
 
-### Install manually with uv (recommended for development)
+### Install manually for development
 
 Clone the repository and install using [uv](https://github.com/astral-sh/uv):
 
@@ -20,15 +24,7 @@ Clone the repository and install using [uv](https://github.com/astral-sh/uv):
     $ cd beets-additionalfiles
     $ uv venv
     $ source .venv/bin/activate  # On Unix/macOS
-    $ uv pip install -e .
-
-### Install manually with pip
-
-Alternatively, you can install with pip:
-
-    $ git clone https://github.com/finnyb/beets-additionalfiles.git
-    $ cd beets-additionalfiles
-    $ pip3 install --user -e .
+    $ uv pip install -e ".[dev]"
 
 ## Usage
 
@@ -76,10 +72,23 @@ After cloning the git repository, set up a development environment using `uv`:
     $ source .venv/bin/activate  # On Unix/macOS
     $ uv pip install -e ".[dev]"
 
+Or use `uv sync` for reproducible builds:
+
+    $ uv sync --extra dev
+
 This will install the plugin in editable mode along with all development dependencies (pytest, ruff, mypy, etc.).
 
 When adding changes, please conform to [PEP 8](https://www.python.org/dev/peps/pep-0008/).
 Also, please add docstrings to all modules, functions and methods that you create.
+
+### Quick Commands (using Makefile)
+
+    $ make install-dev    # Install with dev dependencies
+    $ make test          # Run all tests
+    $ make lint          # Check for linting issues
+    $ make format        # Format code
+    $ make check         # Run lint + tests
+    $ make build         # Build distribution packages
 
 ### Code Quality
 
@@ -89,11 +98,49 @@ This project uses [Ruff](https://github.com/astral-sh/ruff) for linting and code
     $ ruff check --fix beetsplug/ tests/    # Auto-fix issues
     $ ruff format beetsplug/ tests/         # Format code
 
+Or use the Makefile:
+
+    $ make lint    # Check for issues
+    $ make format  # Format and fix
+
 ### Testing
 
 You should *test every single commit* by running the test suite:
 
     $ pytest tests/
 
+Or use the Makefile:
+
+    $ make test              # Run all tests
+    $ make test-fast         # Run tests in quiet mode
+    $ make test-coverage     # Run with coverage report
+
 If a test fails, please fix it *before* you create a pull request.
 If you accidentally commit something that still contains errors, please amend, squash or fixup that commit instead of adding a new one.
+
+### Building
+
+To build distribution packages:
+
+    $ uv build
+
+Or use the Makefile:
+
+    $ make build
+
+### Publishing
+
+This project uses automated publishing via GitHub Actions. See [`.github/PUBLISHING.md`](.github/PUBLISHING.md) for detailed instructions on:
+
+- Setting up PyPI Trusted Publishing
+- Publishing to TestPyPI for testing
+- Creating production releases
+- Troubleshooting common issues
+
+## Continuous Integration
+
+This project uses GitHub Actions for CI/CD:
+
+- **CI**: Runs tests and linting on every push and PR
+- **TestPyPI**: Publishes release candidates for testing
+- **PyPI**: Automatically publishes to PyPI when a GitHub Release is created
