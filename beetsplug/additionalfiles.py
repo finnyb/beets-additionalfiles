@@ -7,8 +7,7 @@ import itertools
 import os
 import shutil
 import traceback
-from collections.abc import Generator, Iterable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import beets.dbcore.db
 import beets.library
@@ -16,6 +15,9 @@ import beets.plugins
 import beets.ui
 import beets.util.functemplate
 import mediafile
+
+if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable
 
 
 class FormattedAdditionalFileMapping(beets.dbcore.db.FormattedMapping):

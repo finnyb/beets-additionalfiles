@@ -59,8 +59,13 @@ python -m pytest --cov=beetsplug tests/
 
 ## Dependencies & Environment
 
+### Build System
+- **Build backend**: `hatchling` (modern, standards-compliant build backend)
+- **Build tool**: `uv build` (fast, modern Python package builder)
+- **Lock file**: `uv.lock` (for reproducible builds)
+
 ### Virtual Environment
-- Use `uv` for dependency and environment management (preferred)
+- Use `uv` for dependency and environment management
 - Standard venv location: `.venv/`
 - All dependencies are managed in `pyproject.toml`
 
@@ -68,10 +73,10 @@ python -m pytest --cov=beetsplug tests/
 ```bash
 # Create virtual environment and install dependencies
 uv venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Unix/macOS
 uv pip install -e ".[dev]"
 
-# Or use uv sync (if using uv.lock)
+# Or use uv sync for reproducible builds (recommended)
 uv sync --extra dev
 
 # Install just the package in editable mode
@@ -79,22 +84,32 @@ uv pip install -e .
 ```
 
 ### Adding Dependencies
-- **Runtime dependencies**: Add to `[project.dependencies]` in `pyproject.toml`, then run `uv pip install -e .`
+- **Runtime dependencies**: Add to `[project.dependencies]` in `pyproject.toml`
 - **Test dependencies**: Add to `[project.optional-dependencies.test]` in `pyproject.toml`
 - **Dev dependencies**: Add to `[project.optional-dependencies.dev]` in `pyproject.toml`
 - Keep version constraints minimal but specify minimum versions when needed
-- Use `uv add package-name` to add dependencies automatically
-- Use `uv add --dev package-name` for dev dependencies
+- After adding dependencies, run `uv lock` to update the lock file
+- Then run `uv sync --extra dev` to install them
 
 ### Updating Dependencies
 ```bash
-# Update all dependencies
-uv pip compile pyproject.toml -o requirements.txt
-uv pip sync requirements.txt
+# Update lock file with latest compatible versions
+uv lock --upgrade
 
-# Or use uv lock for reproducible builds
-uv lock
-uv sync
+# Install updated dependencies
+uv sync --extra dev
+
+# Or manually install after editing pyproject.toml
+uv pip install -e ".[dev]"
+```
+
+### Building Distribution Packages
+```bash
+# Build wheel and source distribution
+uv build
+
+# Or use the Makefile
+make build
 ```
 
 ## Compatibility Considerations
