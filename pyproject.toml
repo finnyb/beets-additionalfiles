@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "beets-additionalfiles"
-version = "1.0.0"
+version = "1.1.0-dev"
 description = "A plugin for beets that copies additional files and directories during the import process."
 readme = "README.md"
 license = { text = "MIT" }

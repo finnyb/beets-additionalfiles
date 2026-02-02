@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-02-01
+
 ### Added
 - Migrated to modern uv build system with hatchling backend
 - Added GitHub Actions workflows for CI and PyPI publishing
@@ -31,5 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Customizable destination paths with template support
 - Support for both file and directory copying
 
-[Unreleased]: https://github.com/finnyb/beets-additionalfiles/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/finnyb/beets-additionalfiles/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/finnyb/beets-additionalfiles/releases/tag/v1.0.0
 [0.0.1]: https://github.com/finnyb/beets-additionalfiles/releases/tag/v0.0.1
