@@ -105,9 +105,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# uv
-uv.lock
-
 # Spyder project settings
 .spyderproject
 .spyproject
