@@ -379,3 +379,134 @@ class MultiAlbumTestCase(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(
                 self.dstdir.name, album, f'{album}.log',
             )))
+
+
+class ArtworkFilesTestCase(BaseTestCase):
+    """Testcase that checks if artwork files are matched and moved."""
+
+    PLUGIN_CONFIG = {
+        'additionalfiles': {
+            'patterns': {
+                'artwork': ['cover*.jpg'],
+            },
+        },
+    }
+
+    def test_match_artwork_files(self):
+        """Test if artwork files (including those with parentheses) are matched."""
+        sourcedir = os.path.join(self.srcdir.name, 'single')
+        filenames = ['cover.jpg', 'cover (1).jpg', 'cover (2).jpg']
+        for filename in filenames:
+            self._create_example_file(sourcedir, filename)
+
+        files = {
+            (os.path.basename(beets.util.displayable_path(path)), category)
+            for path, category in self.plugin.match_patterns(source=sourcedir)
+        }
+
+        for filename in filenames:
+            self.assertIn((filename, 'artwork'), files)
+
+    def test_move_artwork_files(self):
+        """Test if artwork files are moved correctly."""
+        sourcedir = os.path.join(self.srcdir.name, 'single')
+        destdir = os.path.join(self.dstdir.name, 'single')
+        filenames = ['cover.jpg', 'cover (1).jpg', 'cover (2).jpg']
+        for filename in filenames:
+            self._create_example_file(sourcedir, filename)
+
+        source = os.path.join(sourcedir, 'file.mp3')
+        destination = os.path.join(destdir, 'moved_file.mp3')
+        item = beets.library.Item.from_path(source)
+        shutil.move(source, destination)
+        self.plugin.on_item_moved(
+            item, beets.util.bytestring_path(source),
+            beets.util.bytestring_path(destination),
+        )
+
+        self.plugin.on_cli_exit(None)
+
+        for filename in filenames:
+            self.assertFalse(os.path.exists(os.path.join(sourcedir, filename)))
+            # Files are moved to $albumpath/$filename by default in this test case
+            self.assertTrue(os.path.exists(os.path.join(destdir, filename)))
+
+    def test_copy_artwork_files(self):
+        """Test if artwork files are copied correctly."""
+        sourcedir = os.path.join(self.srcdir.name, 'single')
+        destdir = os.path.join(self.dstdir.name, 'single')
+        filenames = ['cover.jpg', 'cover (1).jpg', 'cover (2).jpg']
+        for filename in filenames:
+            self._create_example_file(sourcedir, filename)
+
+        source = os.path.join(sourcedir, 'file.mp3')
+        destination = os.path.join(destdir, 'copied_file.mp3')
+        item = beets.library.Item.from_path(source)
+        shutil.copy(source, destination)
+        self.plugin.on_item_copied(
+            item, beets.util.bytestring_path(source),
+            beets.util.bytestring_path(destination),
+        )
+
+        self.plugin.on_cli_exit(None)
+
+        for filename in filenames:
+            self.assertTrue(os.path.exists(os.path.join(sourcedir, filename)))
+            self.assertTrue(os.path.exists(os.path.join(destdir, filename)))
+
+
+class SkipAndErrorTestCase(BaseTestCase):
+    """Testcase for files that are skipped or fail to process."""
+
+    PLUGIN_CONFIG = {
+        'additionalfiles': {
+            'patterns': {
+                'all': ['*.*'],
+            },
+        },
+    }
+
+    def test_media_files_not_matched(self):
+        """Test if media files handled by the beets importer are not matched."""
+        sourcedir = os.path.join(self.srcdir.name, 'single')
+        files = {
+            os.path.basename(beets.util.displayable_path(path))
+            for path, _ in self.plugin.match_patterns(source=sourcedir)
+        }
+
+        self.assertNotIn('file.mp3', files)
+        self.assertEqual(files, {'file.cue', 'file.txt', 'file.log'})
+
+    def test_missing_source_skipped(self):
+        """Test if a source file that no longer exists is skipped with a warning."""
+        source = os.path.join(self.srcdir.name, 'single', 'missing.txt')
+        destination = os.path.join(self.dstdir.name, 'single', 'missing.txt')
+        action = unittest.mock.Mock()
+
+        with self.assertLogs('beets.additionalfiles', level='WARNING') as logs:
+            self.plugin.process_items([(source, destination)], action=action)
+
+        action.assert_not_called()
+        self.assertFalse(os.path.exists(destination))
+        self.assertIn('Skipping missing source file', logs.output[0])
+
+    def test_failure_does_not_stop_processing(self):
+        """Test if a failing file is logged and the remaining files are still processed."""
+        sourcedir = os.path.join(self.srcdir.name, 'single')
+        destdir = os.path.join(self.dstdir.name, 'single')
+        files = [
+            (os.path.join(sourcedir, name), os.path.join(destdir, name))
+            for name in ('file.cue', 'file.log')
+        ]
+        action = unittest.mock.Mock(side_effect=[
+            beets.util.FilesystemError(OSError('boom'), 'copy', files[0]),
+            None,
+        ])
+
+        with self.assertLogs('beets.additionalfiles', level='WARNING') as logs:
+            self.plugin.process_items(files, action=action)
+
+        self.assertEqual(action.call_count, 2)
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn('Failed to process file', logs.output[0])
+        self.assertIn('file.cue', logs.output[0])
