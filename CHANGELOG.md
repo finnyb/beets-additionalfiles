@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-02
+
+### Changed
+- **Breaking:** Requires beets 2.12.0 or newer (previously 2.5.1)
+
+### Fixed
+- Fixed plugin failing to load on beets 2.12+ (`beets.ui.get_path_formats` removed) and
+  failing to build destination paths on beets 2.13+ (`DefaultTemplateFunctions` arguments
+  now required) ([#4](https://github.com/finnyb/beets-additionalfiles/issues/4))
+- Pattern groups named `comp` or `singleton` are no longer rewritten to beets queries when
+  matching `paths`
+
 ## [1.0.0] - 2026-02-01
 
 ### Added
@@ -33,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Customizable destination paths with template support
 - Support for both file and directory copying
 
-[Unreleased]: https://github.com/finnyb/beets-additionalfiles/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/finnyb/beets-additionalfiles/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/finnyb/beets-additionalfiles/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/finnyb/beets-additionalfiles/releases/tag/v1.0.0
 [0.0.1]: https://github.com/finnyb/beets-additionalfiles/releases/tag/v0.0.1

@@ -75,7 +75,10 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
         self._moved_items: set[tuple[Any, Any, Any]] = set()
         self._copied_items: set[tuple[Any, Any, Any]] = set()
         self._scanned_paths: set[str] = set()
-        self.path_formats = beets.ui.get_path_formats(self.config['paths'])
+        self.path_formats = [
+            (category, beets.util.functemplate.Template(view.as_str()))
+            for category, view in self.config['paths'].items()
+        ]
 
         self.register_listener('item_moved', self.on_item_moved)
         self.register_listener('item_copied', self.on_item_copied)
@@ -316,7 +319,10 @@ class AdditionalFilesPlugin(beets.plugins.BeetsPlugin):
                 '$albumpath/$filename',
             )
 
-        funcs = beets.library.models.DefaultTemplateFunctions().functions()
+        funcs = beets.library.models.DefaultTemplateFunctions(
+            item=None,
+            lib=None,
+        ).functions()
         filepath = path_format.substitute(mapping, funcs) + fileext
 
         # Sanitize filename
